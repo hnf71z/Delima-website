@@ -10,7 +10,7 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "vercel-build": "next build"
+    "vercel-build": "npm ci --include=optional --no-audit --no-fund && NEXT_TELEMETRY_DISABLED=1 next build"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
