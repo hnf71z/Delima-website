@@ -1,6 +1,9 @@
 {
   "name": "delima-fullstack",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "vercel-build": "npm --prefix delima-project-website ci && npm --prefix delima-project-website run build && rm -rf .next && cp -R delima-project-website/.next .next",
     "build": "npm run vercel-build"
