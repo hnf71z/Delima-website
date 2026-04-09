@@ -1,0 +1,19 @@
+# Environment files (never commit secrets)
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Dependencies
+**/node_modules/
+
+# Build outputs
+**/.next/
+**/dist/
+**/build/
+**/out/
+
+# OS artifacts
+.DS_Store
