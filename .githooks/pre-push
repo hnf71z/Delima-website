@@ -2,7 +2,7 @@
 set -eu
 
 zero_sha='0000000000000000000000000000000000000000'
-secret_pattern='AIza[0-9A-Za-z_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|SUPABASE_SERVICE_ROLE_KEY[[:space:]]*=[[:space:]]*[A-Za-z0-9._-]{20,}|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*[0-9]{6,}:[A-Za-z0-9_-]{20,}|GEMINI_API_KEY[[:space:]]*=[[:space:]]*AIza[0-9A-Za-z_-]{20,}'
+secret_pattern='AIza[0-9A-Za-z_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|SUPABASE_SERVICE_ROLE_KEY[[:space:]]*=[[:space:]]*(eyJ[0-9A-Za-z_-]+\.[0-9A-Za-z_-]+\.[0-9A-Za-z_-]+|sb_(?:service_role|secret)_[A-Za-z0-9_-]{20,})|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*[0-9]{6,}:[A-Za-z0-9_-]{20,}|GEMINI_API_KEY[[:space:]]*=[[:space:]]*AIza[0-9A-Za-z_-]{20,}'
 
 while read -r local_ref local_sha remote_ref remote_sha; do
   [ "$local_sha" = "$zero_sha" ] && continue

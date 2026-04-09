@@ -1,19 +1,22 @@
 # De'Lima Backend - Supabase
 
-This backend uses **Supabase** directly from the frontend for a simpler, more deployable architecture.
+This project uses **Supabase** as the single source of truth for dashboard and Telegram operations.
 
 ## Architecture
 
 ```
 Frontend (Next.js) → Supabase (PostgreSQL + Auth + API)
+Telegram Bot (Node.js backend) → Supabase (PostgreSQL + Auth + API)
 ```
 
-**No separate backend server needed!** Supabase provides:
+For the dashboard UI, Supabase can be accessed directly from frontend. Supabase provides:
 - Database (PostgreSQL)
 - Authentication
 - Real-time subscriptions
 - Storage
 - Edge functions (if needed later)
+
+For Telegram Bot automation, jalankan backend ini agar bot bisa melakukan operasi CRUD ke tabel Supabase yang sama dengan dashboard.
 
 ## Setup
 
@@ -53,10 +56,7 @@ These are used in the **frontend**, not here:
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public anon key (NOT service_role!)
 
-## Legacy Files
+## Runtime Modes
 
-The Express.js backend files in this folder are **NOT used** in the Supabase architecture. They are kept for reference only.
-
-**Do NOT run `npm install` or `npm run dev` in this folder.**
-
-All logic is now in the frontend using Supabase client.
+- Dashboard-only mode: frontend langsung ke Supabase.
+- Dashboard + Telegram Bot mode: jalankan backend (`npm run dev`) agar bot aktif dan sinkron ke Supabase.
