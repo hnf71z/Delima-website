@@ -1,15 +1,50 @@
 # 🚀 Cara Deploy De'Lima Admin ke Vercel
 
+## ⚠️ PENTING: Struktur Project
+
+Project ini memiliki struktur monorepo dengan 2 bagian utama:
+```
+Delima FullStack/
+├── delima-project-website/    ← Frontend (Next.js) - INI YANG DI-DEPLOY KE VERCEL
+└── delima-backend/            ← Backend (Supabase) - SUDAH ADA DI CLOUD
+```
+
+**Yang perlu di-deploy ke Vercel: `delima-project-website`**
+
+---
+
 ## ✅ Prerequisites (Sudah Selesai)
 - ✅ Data sudah ada di Supabase (Products: 6, Orders: 5, Order Items: 9)
 - ✅ Frontend sudah ter-build tanpa error
-- ✅ `.env.local` sudah ada credentials Supabase
+- ✅ `.env.example` sudah tersedia di `delima-project-website/`
 
 ---
 
 ## 📋 Step-by-Step Deploy
 
-### **STEP 1: Push Code ke GitHub** (3 menit)
+### **STEP 1: Setup Environment Variables** (2 menit)
+
+**Lokasi:** `delima-project-website/`
+
+1. Copy file `.env.example` menjadi `.env.local`:
+```bash
+cd "/Users/hanifabdusy/Downloads/Delima FullStack/delima-project-website"
+cp .env.example .env.local
+```
+
+2. Buka `.env.local` dan isi dengan credentials Supabase Anda:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://oitywzooutklkhzwcrdj.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_3d5hMVkO6srY1Gr-603n5Q_sNmAbo-K
+```
+
+⚠️ **JANGAN commit `.env.local` ke Git!** (Sudah ada di `.gitignore`)
+
+---
+
+### **STEP 2: Push Code ke GitHub** (3 menit)
+
+**PENTING:** Pastikan hanya folder `delima-project-website` yang di-deploy ke Vercel!
 
 ```bash
 cd "/Users/hanifabdusy/Downloads/Delima FullStack/delima-project-website"
@@ -37,7 +72,7 @@ Ganti `YOUR_USERNAME` dengan username GitHub Anda!
 
 ---
 
-### **STEP 2: Deploy ke Vercel** (5 menit)
+### **STEP 3: Deploy ke Vercel** (5 menit)
 
 **1. Buka Vercel:**
 - Go to https://vercel.com
@@ -48,9 +83,15 @@ Ganti `YOUR_USERNAME` dengan username GitHub Anda!
 - Cari repository `delima-admin`
 - Klik **"Import"**
 
-**3. Configure Project:**
+**3. ⚠️ Configure Project Settings** (SANGAT PENTING!)
+
 - **Framework Preset**: Next.js (auto-detected)
-- **Root Directory**: `delima-project-website` (pilih folder ini)
+- **Root Directory**: `./`  ← BIARKAN DEFAULT (jika repository hanya berisi frontend)
+  
+  ATAU
+  
+- **Root Directory**: `delima-project-website` ← PILIH INI (jika repository berisi MONOREPO)
+
 - **Build Command**: `next build` (default)
 - **Output Directory**: `.next` (default)
 
@@ -145,20 +186,32 @@ Buka URL Vercel Anda dan test:
 
 ### Issue: "Build failed" di Vercel
 **Solusi:**
-- Pastikan `.env.local` **TIDAK** di-commit ke Git
-- Check `.gitignore` punya `.env.local`
-- Environment variables harus di-set di Vercel Settings
+- ✅ Pastikan `.env.local` **TIDAK** di-commit ke Git
+- ✅ Check `.gitignore` punya `.env.local`
+- ✅ Environment variables harus di-set di Vercel Settings
+- ✅ Pastikan **Root Directory** benar saat configure project:
+  - Jika repo hanya berisi frontend: gunakan `./`
+  - Jika repo berisi monorepo: gunakan `delima-project-website`
+- ✅ Cek Vercel Build Logs untuk error detail
+
+### Issue: "Module not found: @nuxt/kit"
+**Solusi:**
+- ✅ Dependency `@nuxt/kit` sudah dihapus dari package.json
+- ✅ Jika masih error, jalankan: `npm install` di folder `delima-project-website`
+- ✅ Pastikan `package-lock.json` sudah ter-update
 
 ### Issue: Dashboard blank/error setelah deploy
 **Solusi:**
 - Cek Vercel Logs (Dashboard → Your Project → Logs)
 - Pastikan Environment Variables sudah benar
 - Cek browser console untuk error messages
+- Pastikan Supabase URL dan Anon Key benar
 
 ### Issue: Login gagal
 **Solusi:**
 - Pastikan user sudah verified di Supabase Auth
 - Cek URL Supabase dan Anon Key benar di Environment Variables
+- Cek browser console untuk error detail
 
 ### Issue: Data tidak muncul
 **Solusi:**
@@ -169,6 +222,17 @@ Buka URL Vercel Anda dan test:
   ```
 - Pastikan RLS policies sudah aktif
 - Check browser console untuk Supabase errors
+
+### Issue: "Failed to collect page data" saat build
+**Solusi:**
+- Pastikan tidak ada import yang salah di file
+- Cek semua component exists dan ter-import dengan benar
+- Jalankan `npm run build` secara lokal untuk test
+
+### Issue: Vercel deploy ke folder yang salah
+**Solusi:**
+- Saat import project di Vercel, pastikan **Root Directory** di-set ke `delima-project-website`
+- Atau buat repository terpisah hanya berisi `delima-project-website`
 
 ---
 

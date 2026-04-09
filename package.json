@@ -1,12 +1,17 @@
 {
   "name": "delima-fullstack",
   "private": true,
+  "workspaces": [
+    "delima-project-website"
+  ],
   "engines": {
     "node": ">=20.9.0"
   },
   "scripts": {
-    "vercel-build": "npm --prefix delima-project-website run vercel-build && rm -rf .next && cp -R delima-project-website/.next .next",
-    "build": "npm run vercel-build"
+    "dev": "npm --prefix delima-project-website run dev",
+    "build": "npm --prefix delima-project-website run build",
+    "start": "npm --prefix delima-project-website run start",
+    "vercel-build": "npm --prefix delima-project-website run vercel-build"
   },
   "dependencies": {
     "next": "16.0.10",
