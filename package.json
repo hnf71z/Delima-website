@@ -4,5 +4,10 @@
   "scripts": {
     "vercel-build": "npm --prefix delima-project-website ci && npm --prefix delima-project-website run build && rm -rf .next && cp -R delima-project-website/.next .next",
     "build": "npm run vercel-build"
+  },
+  "dependencies": {
+    "next": "16.0.10",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
   }
 }
