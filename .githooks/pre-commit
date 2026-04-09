@@ -1,0 +1,28 @@
+#!/bin/sh
+set -eu
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged_files" ] && exit 0
+
+for file in $staged_files; do
+  case "$file" in
+    .env.example|*/.env.example)
+      continue
+      ;;
+    .env|*/.env|.env.*|*/.env.*)
+      echo "[SECURITY] Commit blocked: file env terdeteksi di staging: $file"
+      echo "Gunakan .env.example untuk template, simpan secret di file .env lokal (ignored)."
+      exit 1
+      ;;
+  esac
+done
+
+secret_pattern='AIza[0-9A-Za-z_-]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|SUPABASE_SERVICE_ROLE_KEY[[:space:]]*=[[:space:]]*[A-Za-z0-9._-]{20,}|TELEGRAM_BOT_TOKEN[[:space:]]*=[[:space:]]*[0-9]{6,}:[A-Za-z0-9_-]{20,}|GEMINI_API_KEY[[:space:]]*=[[:space:]]*AIza[0-9A-Za-z_-]{20,}'
+
+if git diff --cached --no-color | grep -E "$secret_pattern" >/dev/null 2>&1; then
+  echo "[SECURITY] Commit blocked: pola credential sensitif terdeteksi di staged diff."
+  echo "Hapus/rotate secret lalu commit ulang."
+  exit 1
+fi
+
+exit 0
