@@ -48,16 +48,13 @@ export function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
-    if (prefersReducedMotion || isMobile) {
-      return
-    }
-
+    // Always enable image carousel for both mobile and desktop
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length)
     }, 3800)
 
     return () => clearInterval(interval)
-  }, [isMobile, prefersReducedMotion])
+  }, [prefersReducedMotion])
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -288,6 +285,22 @@ export function HeroSection() {
                     />
                   </motion.div>
                 </AnimatePresence>
+                
+                {/* Image indicators/dots */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+                  {heroImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentImageIndex
+                          ? "w-6 bg-[#84cc16]"
+                          : "w-2 bg-[#84cc16]/40 hover:bg-[#84cc16]/60"
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </motion.div>
             </motion.div>
           </motion.div>
