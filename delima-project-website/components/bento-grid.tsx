@@ -2,7 +2,6 @@
 
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
-import { Highlighter } from "@/components/ui/highlighter"
 
 const pillars = [
   {
@@ -50,8 +49,8 @@ function PilarItem({ pillar, isLast }: { pillar: typeof pillars[0]; isLast: bool
         <span className="text-5xl lg:text-[4.5rem] font-medium leading-none text-[#65a30d]">
           {pillar.letter}
         </span>
-        <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
-          {pillar.title}
+        <h3 className="text-2xl lg:text-3xl font-bold tracking-tight">
+          <span className="green-shimmer relative z-10 leading-none px-1 block" data-text={pillar.title}>{pillar.title}</span>
         </h3>
       </motion.div>
 
@@ -86,9 +85,9 @@ function MobilePilarItem({ pillar, isLast }: { pillar: typeof pillars[0]; isLast
           initial={{ opacity: 0, x: -12 }}
           animate={isInView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.15 }}
-          className="text-2xl font-bold text-gray-900 tracking-tight"
+          className="text-2xl font-bold tracking-tight text-gray-900"
         >
-          {pillar.title}
+          <span className="green-shimmer relative z-10 leading-none px-1 block" data-text={pillar.title}>{pillar.title}</span>
         </motion.h3>
       </div>
       <motion.p
@@ -124,9 +123,7 @@ export function BentoGrid() {
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="flex flex-col gap-3 items-start">
-                  <Highlighter action="underline" color="#65a30d" strokeWidth={3} animationDuration={1500} padding={10}>
-                    <span className="green-shimmer text-4xl lg:text-[4.5rem] font-bold tracking-tight leading-none block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
-                  </Highlighter>
+                  <span className="green-shimmer text-4xl lg:text-[4.5rem] font-bold tracking-tight leading-none block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
                 </div>
               </motion.div>
             </div>
@@ -154,9 +151,7 @@ export function BentoGrid() {
             className="mb-12"
           >
             <div className="flex flex-col gap-3 items-start">
-              <Highlighter action="underline" color="#65a30d" strokeWidth={3} animationDuration={1500} padding={10}>
-                <span className="green-shimmer text-[4rem] font-bold tracking-tight leading-none mt-1 block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
-              </Highlighter>
+              <span className="green-shimmer text-[4rem] font-bold tracking-tight leading-none mt-1 block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
             </div>
           </motion.div>
 
@@ -200,6 +195,19 @@ export function BentoGrid() {
           }
           to {
             background-position: -40% 0;
+          }
+        }
+
+        @media (max-width: 767px) {
+          .green-shimmer::after {
+            animation: none;
+            background-position: 50% 0;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .green-shimmer::after {
+            animation: none;
           }
         }
       `}</style>
