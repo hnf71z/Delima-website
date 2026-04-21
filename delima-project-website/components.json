@@ -20,6 +20,7 @@
   },
   "registries": {
     "@react-bits": "https://reactbits.dev/r/{name}.json",
-    "@eldoraui": "https://eldoraui.site/r/{name}.json"
+    "@eldoraui": "https://eldoraui.site/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}"
   }
 }
