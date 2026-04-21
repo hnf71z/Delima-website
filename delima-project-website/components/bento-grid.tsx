@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
+import { Highlighter } from "@/components/ui/highlighter"
 
 const pillars = [
   {
@@ -123,7 +124,9 @@ export function BentoGrid() {
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="flex flex-col gap-3 items-start">
-                  <span className="green-shimmer text-4xl lg:text-[4.5rem] font-bold tracking-tight leading-none block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
+                  <Highlighter action="underline" color="#65a30d" strokeWidth={3} animationDuration={1500} padding={10}>
+                    <span className="green-shimmer text-4xl lg:text-[4.5rem] font-bold tracking-tight leading-none block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
+                  </Highlighter>
                 </div>
               </motion.div>
             </div>
@@ -151,7 +154,9 @@ export function BentoGrid() {
             className="mb-12"
           >
             <div className="flex flex-col gap-3 items-start">
-              <span className="green-shimmer text-[4rem] font-bold tracking-tight leading-none mt-1 block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
+              <Highlighter action="underline" color="#65a30d" strokeWidth={3} animationDuration={1500} padding={10}>
+                <span className="green-shimmer text-[4rem] font-bold tracking-tight leading-none mt-1 block px-1 pb-2" data-text="De'Lima">De&apos;Lima</span>
+              </Highlighter>
             </div>
           </motion.div>
 
