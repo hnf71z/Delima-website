@@ -133,9 +133,13 @@ export default function ProductsPage() {
       toast.success('Product deleted successfully')
       setDeleteDialogOpen(false)
       await loadProducts()
-    } catch (error) {
-      console.error('Failed to delete product:', error)
-      toast.error('Failed to delete product')
+    } catch (error: any) {
+      if (error?.code === '23503') {
+        toast.error('Cannot delete: Product is in an order history. Please deactivate it instead.')
+      } else {
+        console.error('Failed to delete product:', error)
+        toast.error(error?.message || 'Failed to delete product')
+      }
     } finally {
       setIsDeleting(false)
     }

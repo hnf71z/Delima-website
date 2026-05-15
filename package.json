@@ -12,10 +12,5 @@
     "build": "npm --prefix delima-project-website run build",
     "start": "npm --prefix delima-project-website run start",
     "vercel-build": "npm --prefix delima-project-website run vercel-build"
-  },
-  "dependencies": {
-    "next": "16.0.10",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
   }
 }
