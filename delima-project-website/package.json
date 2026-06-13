@@ -43,7 +43,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@supabase/supabase-js": "^2.102.1",
-    "@vercel/analytics": "^1.1.4",
+    "@vercel/analytics": "^1.6.1",
     "aos": "^2.3.4",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
