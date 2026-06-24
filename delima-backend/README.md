@@ -44,6 +44,7 @@ See full instructions in: **`../DEPLOYMENT-GUIDE.md`**
 - `products` - Product catalog (dimsum, minuman)
 - `orders` - Customer orders
 - `order_items` - Items in each order
+- `web_analytics_events` - Event dari Vercel Web Analytics Drain untuk grafik pengunjung dashboard
 
 ### Security
 - Row Level Security (RLS) enabled on all tables
@@ -55,6 +56,18 @@ See full instructions in: **`../DEPLOYMENT-GUIDE.md`**
 These are used in the **frontend**, not here:
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public anon key (NOT service_role!)
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key untuk endpoint drain Vercel Analytics (server-only, jangan prefix `NEXT_PUBLIC_`)
+- `VERCEL_ANALYTICS_DRAIN_SECRET` - Secret bebas untuk mengamankan endpoint `/api/analytics/vercel-drain`
+
+## Vercel Web Analytics Drain
+
+Dashboard menampilkan grafik pengunjung dari tabel `web_analytics_events`. Karena Vercel Web Analytics belum menyediakan REST API publik untuk menarik data dashboard secara langsung, kirim event ke Supabase melalui drain endpoint:
+
+```
+https://your-domain.com/api/analytics/vercel-drain?secret=YOUR_SECRET
+```
+
+Gunakan value yang sama dengan `VERCEL_ANALYTICS_DRAIN_SECRET` di environment Vercel.
 
 ## Runtime Modes
 

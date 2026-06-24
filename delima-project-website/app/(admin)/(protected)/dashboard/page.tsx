@@ -188,6 +188,10 @@ export default function DashboardPage() {
     ? (weeklyRevenueData.reduce((sum, w) => sum + w.marginPercentage, 0) / weeklyRevenueData.length).toFixed(1)
     : '0'
 
+  const bestWeek = weeklyRevenueData.length > 0
+    ? [...weeklyRevenueData].sort((a, b) => b.revenue - a.revenue)[0]
+    : null
+
   const metricsCards = [
     {
       title: 'Total Omzet',
@@ -601,6 +605,12 @@ export default function DashboardPage() {
                   <span className="text-lime-600 font-bold mt-0.5">•</span>
                   <span>Secara keseluruhan, margin rata-rata yang didapatkan adalah sebesar <strong className="text-gray-900">{metrics?.averageMargin || 0}%</strong> dari total <strong className="text-gray-900">{metrics?.totalProductsSold || 0} produk</strong> yang terjual ke {metrics?.totalCustomers || 0} pelanggan.</span>
                 </li>
+                {bestWeek && (
+                  <li className="flex items-start gap-2">
+                    <span className="text-lime-600 font-bold mt-0.5">•</span>
+                    <span>Performa paling maksimal terjadi pada <strong className="text-gray-900">{bestWeek.week}</strong> dengan pencapaian omzet tertinggi sebesar <strong className="text-gray-900">{formatCurrency(bestWeek.revenue)}</strong>.</span>
+                  </li>
+                )}
               </ul>
             </div>
           </CardContent>

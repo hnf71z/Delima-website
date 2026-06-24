@@ -12,5 +12,8 @@
     "build": "npm --prefix delima-project-website run build",
     "start": "npm --prefix delima-project-website run start",
     "vercel-build": "npm --prefix delima-project-website run vercel-build"
+  },
+  "devDependencies": {
+    "next": "^15.5.18"
   }
 }
