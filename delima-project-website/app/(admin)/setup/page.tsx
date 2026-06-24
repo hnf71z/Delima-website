@@ -85,7 +85,7 @@ export default function SetupPage() {
     setTestResult(null)
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('products')
         .select('count', { count: 'exact', head: true })
       
@@ -105,7 +105,7 @@ export default function SetupPage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Setup De'Lima Admin Dashboard
+            Setup De&apos;Lima Admin Dashboard
           </h1>
           <p className="text-muted-foreground">
             Ikuti 6 langkah berikut untuk menghubungkan ke Supabase

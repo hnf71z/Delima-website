@@ -133,12 +133,13 @@ export default function ProductsPage() {
       toast.success('Product deleted successfully')
       setDeleteDialogOpen(false)
       await loadProducts()
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Record<string, unknown>
       if (error?.code === '23503') {
         toast.error('Cannot delete: Product is in an order history. Please deactivate it instead.')
       } else {
         console.error('Failed to delete product:', error)
-        toast.error(error?.message || 'Failed to delete product')
+        toast.error((error?.message as string) || 'Failed to delete product')
       }
     } finally {
       setIsDeleting(false)
@@ -217,6 +218,7 @@ export default function ProductsPage() {
         p.is_active === false || p.stock === 0 ? 'Out of Stock' : 'Available'
       ])
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(doc as any).autoTable({
         startY: 42,
         head: [['Product Name', 'Category', 'Price', 'Stock', 'Status']],
@@ -245,6 +247,7 @@ export default function ProductsPage() {
       })
 
       // Footer
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pageCount = (doc as any).internal.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
@@ -252,8 +255,10 @@ export default function ProductsPage() {
         doc.setTextColor(150, 150, 150)
         doc.text(
           `Page ${i} of ${pageCount}`,
-          (doc as any).internal.pageSize.width / 2,
-          (doc as any).internal.pageSize.height - 10,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc as any).internal.pageSize.width / 2,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (doc as any).internal.pageSize.height - 10,
           { align: 'center' }
         )
       }
@@ -309,7 +314,7 @@ export default function ProductsPage() {
           { label: 'Available', value: stats.available.toString(), color: 'text-green-600' },
           { label: 'Out of Stock', value: stats.outOfStock.toString(), color: 'text-red-600' },
           { label: 'Categories', value: stats.categories.toString(), color: 'text-blue-600' },
-        ].map((stat, i) => (
+        ].map((stat) => (
           <Card key={stat.label} className="border-0 shadow-sm">
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
