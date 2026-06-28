@@ -240,7 +240,7 @@ export function AnimatedShinyButton({
           }
         }
 
-        @media (max-width: 767px) {
+        @media (prefers-reduced-motion: reduce) {
           .shiny-cta,
           .shiny-cta::before,
           .shiny-cta::after,

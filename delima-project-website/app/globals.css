@@ -286,3 +286,109 @@
   }
 }
 
+
+/* ━━ De'Lima formula section — green shimmer heading ━━ */
+.green-shimmer {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(110deg, #365314 0%, #65a30d 50%, #4d7c0f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.green-shimmer::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: transparent;
+  background: linear-gradient(
+    110deg,
+    rgba(132, 204, 22, 0) 34%,
+    rgba(217, 249, 157, 0.95) 49%,
+    rgba(132, 204, 22, 0) 64%
+  );
+  background-size: 220% 100%;
+  background-position: 180% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: greenShimmer 2.8s linear infinite;
+}
+
+@keyframes greenShimmer {
+  from { background-position: 180% 0; }
+  to { background-position: -40% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .green-shimmer::after {
+    animation: none;
+  }
+}
+
+/* ━━ De'Lima formula section — shiny animated card (mobile) ━━ */
+@property --card-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.shimmer-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--card-angle),
+    transparent 0%,
+    #84cc16 8%,
+    #AFFF00 15%,
+    #84cc16 22%,
+    transparent 32%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: cardBorderSpin 4s linear infinite;
+}
+
+.shimmer-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    rgba(174, 255, 0, 0.14) 50%,
+    transparent 65%
+  );
+  background-size: 220% 100%;
+  background-position: 180% 0;
+  animation: cardSheen 3.6s linear infinite;
+}
+
+@keyframes cardBorderSpin {
+  to { --card-angle: 360deg; }
+}
+
+@keyframes cardSheen {
+  from { background-position: 180% 0; }
+  to { background-position: -80% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-card::before,
+  .shimmer-card::after {
+    animation: none;
+  }
+}
