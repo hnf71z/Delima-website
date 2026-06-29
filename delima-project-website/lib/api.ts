@@ -321,6 +321,27 @@ export const analyticsAPI = {
   },
 
   getVercelVisitorsTrend: async () => {
+    // Prefer the curated weekly_web_analytics summary table (4 stages / 4 minggu).
+    const { data: weekly, error: weeklyError } = await supabase
+      .from('weekly_web_analytics')
+      .select('stage, week_number, visitors, page_views')
+      .order('week_number', { ascending: true })
+
+    if (!weeklyError && weekly && weekly.length > 0) {
+      return weekly.map((row, index) => {
+        const previous = index > 0 ? weekly[index - 1] : null
+
+        return {
+          stage: row.stage,
+          visitors: row.visitors,
+          pageViews: row.page_views,
+          percentage: previous ? calculatePercentageChange(row.visitors, previous.visitors) : 0,
+          percentagePageViews: previous ? calculatePercentageChange(row.page_views, previous.page_views) : 0,
+        }
+      })
+    }
+
+    // Fallback: aggregate raw Vercel Web Analytics drain events into 4 weekly buckets.
     const buckets = createLastFourWeekBuckets()
 
     const emptyData = buckets.map((bucket) => ({

@@ -45,6 +45,7 @@ See full instructions in: **`../DEPLOYMENT-GUIDE.md`**
 - `orders` - Customer orders
 - `order_items` - Items in each order
 - `web_analytics_events` - Event dari Vercel Web Analytics Drain untuk grafik pengunjung dashboard
+- `weekly_web_analytics` - Ringkasan pengunjung & page views website per minggu (4 stage), sumber utama grafik Web Analytics di dashboard (fallback ke `web_analytics_events` bila kosong)
 
 ### Security
 - Row Level Security (RLS) enabled on all tables

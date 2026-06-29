@@ -235,3 +235,38 @@ create trigger handle_updated_at_weekly_sales_reports
   before update on public.weekly_sales_reports
   for each row
   execute function public.handle_updated_at();
+
+-- Weekly Web Analytics table (ringkasan pengunjung website per minggu / 4 stage)
+create table if not exists public.weekly_web_analytics (
+  id uuid default uuid_generate_v4() primary key,
+  stage text not null,
+  week_number integer not null check (week_number between 1 and 4),
+  visitors integer not null default 0 check (visitors >= 0),
+  page_views integer not null default 0 check (page_views >= 0),
+  period_start date,
+  period_end date,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now(),
+  unique (week_number)
+);
+
+-- Enable RLS
+alter table public.weekly_web_analytics enable row level security;
+
+-- Policies for Weekly Web Analytics
+create policy "Weekly web analytics are viewable by authenticated users"
+  on public.weekly_web_analytics for select
+  using (auth.role() = 'authenticated');
+
+create policy "Authenticated users can manage weekly web analytics"
+  on public.weekly_web_analytics for all
+  using (auth.role() = 'authenticated');
+
+-- Index for ordered reads
+create index if not exists idx_weekly_web_analytics_week on public.weekly_web_analytics(week_number);
+
+-- Trigger for updated_at
+create trigger handle_updated_at_weekly_web_analytics
+  before update on public.weekly_web_analytics
+  for each row
+  execute function public.handle_updated_at();
