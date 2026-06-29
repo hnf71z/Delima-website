@@ -502,6 +502,7 @@ export interface SocialMediaWeekRow {
   posts: number
   followers: number
   likes: number
+  views: number
   recorded_at: string
   created_at: string
 }
@@ -512,8 +513,10 @@ export interface PlatformSummary {
   posts: number
   followers: number
   likes: number
+  views: number
   followerGrowth: string
   likeGrowth: string
+  viewGrowth: string
 }
 
 export interface SocialMediaChartRow {
@@ -522,10 +525,14 @@ export interface SocialMediaChartRow {
   tiktokFollowers: number
   instagramLikes: number
   tiktokLikes: number
+  instagramViews: number
+  tiktokViews: number
   percentageIgFollowers?: number
   percentageTtFollowers?: number
   percentageIgLikes?: number
   percentageTtLikes?: number
+  percentageIgViews?: number
+  percentageTtViews?: number
 }
 
 export const socialMediaAPI = {
@@ -548,7 +555,7 @@ export const socialMediaAPI = {
     // Build platform summaries (use latest week's data)
     const buildSummary = (platformRows: SocialMediaWeekRow[]): PlatformSummary => {
       if (platformRows.length === 0) {
-        return { platform: '', handle: '', posts: 0, followers: 0, likes: 0, followerGrowth: '0%', likeGrowth: '0%' }
+        return { platform: '', handle: '', posts: 0, followers: 0, likes: 0, views: 0, followerGrowth: '0%', likeGrowth: '0%', viewGrowth: '0%' }
       }
       const latest = platformRows[platformRows.length - 1]
       const first = platformRows[0]
@@ -558,6 +565,9 @@ export const socialMediaAPI = {
       const likeGrowthPct = first.likes > 0
         ? ((latest.likes - first.likes) / first.likes * 100).toFixed(1)
         : '0'
+      const viewGrowthPct = first.views > 0
+        ? ((latest.views - first.views) / first.views * 100).toFixed(1)
+        : '0'
 
       return {
         platform: latest.platform,
@@ -565,8 +575,10 @@ export const socialMediaAPI = {
         posts: latest.posts,
         followers: latest.followers,
         likes: latest.likes,
+        views: latest.views,
         followerGrowth: `+${followerGrowthPct}%`,
         likeGrowth: `+${likeGrowthPct}%`,
+        viewGrowth: `+${viewGrowthPct}%`,
       }
     }
 
@@ -592,10 +604,14 @@ export const socialMediaAPI = {
         tiktokFollowers: tt?.followers ?? 0,
         instagramLikes: ig?.likes ?? 0,
         tiktokLikes: tt?.likes ?? 0,
+        instagramViews: ig?.views ?? 0,
+        tiktokViews: tt?.views ?? 0,
         percentageIgFollowers: calcPct(ig?.followers, prevIg?.followers),
         percentageTtFollowers: calcPct(tt?.followers, prevTt?.followers),
         percentageIgLikes: calcPct(ig?.likes, prevIg?.likes),
         percentageTtLikes: calcPct(tt?.likes, prevTt?.likes),
+        percentageIgViews: calcPct(ig?.views, prevIg?.views),
+        percentageTtViews: calcPct(tt?.views, prevTt?.views),
       }
     })
 

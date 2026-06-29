@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { ArrowUpRight, Instagram, Users, Heart, Image as ImageIcon, Video, TrendingUp, Loader2, Globe } from 'lucide-react'
+import { ArrowUpRight, Instagram, Users, Heart, Image as ImageIcon, Video, TrendingUp, Loader2, Globe, Eye } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { socialMediaAPI, analyticsAPI, type PlatformSummary, type SocialMediaChartRow } from '@/lib/api'
@@ -54,6 +54,17 @@ const engagementChartConfig = {
   },
   tiktokLikes: {
     label: 'TikTok Likes',
+    color: chartColors.green,
+  },
+} satisfies ChartConfig
+
+const viewsChartConfig = {
+  instagramViews: {
+    label: 'Instagram Views',
+    color: chartColors.lime,
+  },
+  tiktokViews: {
+    label: 'TikTok Views',
     color: chartColors.green,
   },
 } satisfies ChartConfig
@@ -281,6 +292,10 @@ export default function AnalyticsPage() {
               <TrendingUp className="h-4 w-4 mr-1.5" />
               Engagement
             </TabsTrigger>
+            <TabsTrigger value="views">
+              <Eye className="h-4 w-4 mr-1.5" />
+              Views
+            </TabsTrigger>
             <TabsTrigger value="website">
               <Globe className="h-4 w-4 mr-1.5" />
               Web Analytics
@@ -445,6 +460,88 @@ export default function AnalyticsPage() {
                   <div className="rounded-xl bg-gray-50 px-3 py-2">
                     <p className="text-[11px] font-medium text-muted-foreground">Total</p>
                     <p className="mt-0.5 text-sm font-bold text-foreground">{(igStats?.likes ?? 0) + (ttStats?.likes ?? 0)} likes</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Views Tab */}
+          <TabsContent value="views">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-white">
+              <CardHeader className="p-4 lg:p-6 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg lg:text-xl">Views (Viewer)</CardTitle>
+                    <CardDescription className="text-xs lg:text-sm mt-1">Total views Instagram dan TikTok per minggu</CardDescription>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    <Eye className="h-3 w-3 mr-1 text-lime-600" />
+                    {chartData.length} Minggu
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 lg:p-6 pt-0">
+                <ChartContainer config={viewsChartConfig} className="h-[250px] lg:h-[350px] w-full">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorIgViews" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={chartColors.lime} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={chartColors.lime} stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorTtViews" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={chartColors.green} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={chartColors.green} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200/50" />
+                    <XAxis
+                      dataKey="name"
+                      className="text-xs"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      className="text-xs"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent formatter={(value, name, item, index, payload) => {
+                      const isIg = item.dataKey === 'instagramViews'
+                      const pct = isIg ? payload.percentageIgViews : payload.percentageTtViews
+                      return renderTooltipRow(value, name, item, pct)
+                    }} />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <Area
+                      type="monotone"
+                      dataKey="instagramViews"
+                      stroke={chartColors.lime}
+                      strokeWidth={3}
+                      fill="url(#colorIgViews)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="tiktokViews"
+                      stroke={chartColors.green}
+                      strokeWidth={3}
+                      fill="url(#colorTtViews)"
+                    />
+                  </AreaChart>
+                </ChartContainer>
+
+                {/* Summary chips */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="rounded-xl bg-lime-50 px-3 py-2">
+                    <p className="text-[11px] font-medium text-lime-700/70">Instagram Views</p>
+                    <p className="mt-0.5 text-sm font-bold text-lime-800">{(igStats?.views ?? 0).toLocaleString()} views</p>
+                  </div>
+                  <div className="rounded-xl bg-green-50 px-3 py-2">
+                    <p className="text-[11px] font-medium text-green-700/70">TikTok Views</p>
+                    <p className="mt-0.5 text-sm font-bold text-green-800">{(ttStats?.views ?? 0).toLocaleString()} views</p>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 px-3 py-2">
+                    <p className="text-[11px] font-medium text-muted-foreground">Total</p>
+                    <p className="mt-0.5 text-sm font-bold text-foreground">{((igStats?.views ?? 0) + (ttStats?.views ?? 0)).toLocaleString()} views</p>
                   </div>
                 </div>
               </CardContent>
