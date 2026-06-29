@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { AnimatePresence, motion } from "framer-motion"
-import { Users, ShoppingCart, Volume2, VolumeX, Play } from "lucide-react"
+import { Users, ShoppingCart, Volume2, VolumeX, Play, Home } from "lucide-react"
 import { NumberTicker } from "@/components/ui/number-ticker"
 import { Highlighter } from "@/components/ui/highlighter"
 import { SmoothCursor } from "@/components/ui/smooth-cursor"
-import { BorderBeam } from "@/components/ui/border-beam"
+
+// Pre-rendered (optimized) gallery URLs we warm into cache before Step 3 shows.
+const PHOTO_PRELOAD_WIDTH = 640
+const PHOTO_QUALITY = 65
 
 // ----------------------------------------------------------------------------
 // Data
@@ -22,7 +25,6 @@ const STEP_DURATIONS = [7500, 5500]
 // Page
 // ----------------------------------------------------------------------------
 export default function AppreciationPage() {
-  const router = useRouter()
   const [started, setStarted] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [muted, setMuted] = useState(false)
@@ -36,12 +38,15 @@ export default function AppreciationPage() {
     return () => clearTimeout(t)
   }, [started, currentStep])
 
-  // After the "Our Customer" gallery has shown for 15s, return to the homepage.
+  // Warm the gallery images into the browser cache as soon as the page mounts,
+  // hitting the exact optimized URLs next/image will request, so by the time the
+  // "Our Customer" step appears (~13s later) every photo paints instantly.
   useEffect(() => {
-    if (!started || currentStep < 2) return
-    const t = setTimeout(() => router.push("/"), 15000)
-    return () => clearTimeout(t)
-  }, [started, currentStep, router])
+    customerPhotos.forEach((src) => {
+      const img = new window.Image()
+      img.src = `/_next/image?url=${encodeURIComponent(src)}&w=${PHOTO_PRELOAD_WIDTH}&q=${PHOTO_QUALITY}`
+    })
+  }, [])
 
   const handleStart = () => {
     setStarted(true)
@@ -268,16 +273,12 @@ function StepMilestone() {
           value={38}
           label="Customers"
           delay={0.4}
-          beamFrom="#AFFF00"
-          beamTo="#22C55E"
         />
         <MetricCard
           icon={<ShoppingCart className="h-8 w-8" />}
           value={63}
           label="Produk Terjual"
           delay={0.7}
-          beamFrom="#22C55E"
-          beamTo="#FACC15"
         />
       </div>
     </motion.section>
@@ -289,15 +290,11 @@ function MetricCard({
   value,
   label,
   delay,
-  beamFrom,
-  beamTo,
 }: {
   icon: React.ReactNode
   value: number
   label: string
   delay: number
-  beamFrom: string
-  beamTo: string
 }) {
   // Trigger a zoom "pop" once NumberTicker has settled on the real value.
   const [popped, setPopped] = useState(false)
@@ -315,14 +312,6 @@ function MetricCard({
     >
       {/* decorative glow */}
       <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#E2F5D6] opacity-60 blur-2xl" />
-      <BorderBeam
-        size={70}
-        duration={6}
-        delay={delay}
-        colorFrom={beamFrom}
-        colorTo={beamTo}
-        borderWidth={2}
-      />
 
       <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#84CC16] to-[#22C55E] text-white shadow-lg shadow-green-500/30">
         {icon}
@@ -474,10 +463,35 @@ function StepGallery() {
         Our Customer
       </motion.h2>
 
+      <motion.p
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.7 }}
+        className="max-w-xl text-center text-base text-gray-500 sm:text-lg"
+      >
+        Terima kasih telah membantu perjalanan{" "}
+        <span className="font-semibold text-[#15803D]">De&apos;Lima</span>. Setiap
+        senyum kalian adalah langkah berarti bagi kami.
+      </motion.p>
+
       <div className="grid w-full max-w-3xl grid-cols-2 gap-4">
         <PhotoMarquee items={colA} direction="up" speed={4} />
         <PhotoMarquee items={colB} direction="down" speed={4} />
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.6 }}
+      >
+        <Link
+          href="/"
+          className="group flex items-center gap-2.5 rounded-full bg-[#22C55E] px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-500/30 transition hover:scale-105 hover:bg-[#16A34A]"
+        >
+          <Home className="h-5 w-5" />
+          Kembali ke Beranda
+        </Link>
+      </motion.div>
     </motion.section>
   )
 }
@@ -495,7 +509,7 @@ function PhotoMarquee({
   const duration = items.length * speed
 
   return (
-    <div className="relative h-[62vh] overflow-hidden">
+    <div className="relative h-[42vh] overflow-hidden sm:h-[52vh]">
       {/* gradient fades */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-gray-50 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-gray-50 to-transparent" />
