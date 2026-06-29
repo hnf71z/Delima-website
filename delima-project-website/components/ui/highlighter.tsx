@@ -68,16 +68,13 @@ export function Highlighter({
       annotation = currentAnnotation
       currentAnnotation.show()
 
-      let timeoutId: NodeJS.Timeout
       resizeObserver = new ResizeObserver(() => {
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => {
-          currentAnnotation.hide()
-          currentAnnotation.show()
-        }, 300)
+        currentAnnotation.hide()
+        currentAnnotation.show()
       })
 
       resizeObserver.observe(element)
+      resizeObserver.observe(document.body)
     }
 
     return () => {

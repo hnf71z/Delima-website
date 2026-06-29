@@ -93,33 +93,19 @@ function PilarItem({ pillar, isLast }: { pillar: typeof pillars[0]; isLast: bool
   )
 }
 
-/* ━━ Mobile pillar card ━━ */
+/* ━━ Mobile pillar card — static (no animation) to avoid jank on mobile ━━ */
 function MobilePilarItem({ pillar }: { pillar: typeof pillars[0] }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: "-5% 0px -5% 0px" })
-
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 28 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="shimmer-card relative overflow-hidden rounded-3xl border border-lime-100 bg-gradient-to-br from-white to-lime-50/40 p-6 shadow-lg shadow-lime-200/30"
-    >
+    <div className="relative overflow-hidden rounded-3xl border border-lime-100 bg-gradient-to-br from-white to-lime-50/40 p-6 shadow-lg shadow-lime-200/30">
       <div className="relative z-10">
-        <motion.h3
-          initial={{ opacity: 0, x: -12 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.45, delay: 0.1 }}
-          className="text-xl font-bold tracking-tight mb-3"
-        >
+        <h3 className="text-xl font-bold tracking-tight mb-3">
           <span className="green-shimmer relative z-10 leading-none block" data-text={pillar.title}>{pillar.title}</span>
-        </motion.h3>
+        </h3>
         <p className="text-sm leading-relaxed text-gray-600">
           {pillar.description}
         </p>
       </div>
-    </motion.div>
+    </div>
   )
 }
 

@@ -83,6 +83,9 @@
 @theme inline {
   --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Geist Mono", monospace;
+  --font-outfit: var(--font-outfit), "Inter Fallback", sans-serif;
+  --font-poppins: var(--font-poppins), "Inter Fallback", sans-serif;
+  --font-script: var(--font-script), "Brush Script MT", cursive;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -235,6 +238,24 @@
 
 .animate-marquee-down {
   animation: marquee-down linear infinite;
+}
+
+/* Appreciation page: keep marquee running on every breakpoint (incl. mobile) */
+.animate-marquee-up-always {
+  animation: marquee-up linear infinite;
+}
+
+.animate-marquee-down-always {
+  animation: marquee-down linear infinite;
+}
+
+/* Appreciation page: hide the native cursor everywhere on pointer devices so
+   the SmoothCursor is the only one shown (incl. over buttons/links). */
+@media (any-hover: hover) and (any-pointer: fine) {
+  .appreciation-page,
+  .appreciation-page * {
+    cursor: none !important;
+  }
 }
 
 .bg-mesh-gradient {
@@ -390,5 +411,16 @@
   .shimmer-card::before,
   .shimmer-card::after {
     animation: none;
+  }
+}
+
+/* Mobile: drop the continuous shimmer effects on the De'Lima philosophy cards
+   to avoid jank. Base green gradient text + card styling stay intact. */
+@media (max-width: 767px) {
+  .shimmer-card::before,
+  .shimmer-card::after,
+  .green-shimmer::after {
+    display: none !important;
+    animation: none !important;
   }
 }
