@@ -517,6 +517,7 @@ export interface PlatformSummary {
   followerGrowth: string
   likeGrowth: string
   viewGrowth: string
+  postGrowth: string
 }
 
 export interface SocialMediaChartRow {
@@ -527,12 +528,21 @@ export interface SocialMediaChartRow {
   tiktokLikes: number
   instagramViews: number
   tiktokViews: number
+  instagramPosts: number
+  tiktokPosts: number
   percentageIgFollowers?: number
   percentageTtFollowers?: number
   percentageIgLikes?: number
   percentageTtLikes?: number
   percentageIgViews?: number
   percentageTtViews?: number
+  percentageIgPosts?: number
+  percentageTtPosts?: number
+}
+
+export interface BiggestFollowerIncrease {
+  instagram: { week: string; increase: number; percentage: number }
+  tiktok: { week: string; increase: number; percentage: number }
 }
 
 export const socialMediaAPI = {
@@ -555,7 +565,7 @@ export const socialMediaAPI = {
     // Build platform summaries (use latest week's data)
     const buildSummary = (platformRows: SocialMediaWeekRow[]): PlatformSummary => {
       if (platformRows.length === 0) {
-        return { platform: '', handle: '', posts: 0, followers: 0, likes: 0, views: 0, followerGrowth: '0%', likeGrowth: '0%', viewGrowth: '0%' }
+        return { platform: '', handle: '', posts: 0, followers: 0, likes: 0, views: 0, followerGrowth: '0%', likeGrowth: '0%', viewGrowth: '0%', postGrowth: '0%' }
       }
       const latest = platformRows[platformRows.length - 1]
       const first = platformRows[0]
@@ -568,6 +578,9 @@ export const socialMediaAPI = {
       const viewGrowthPct = first.views > 0
         ? ((latest.views - first.views) / first.views * 100).toFixed(1)
         : '0'
+      const postGrowthPct = first.posts > 0
+        ? ((latest.posts - first.posts) / first.posts * 100).toFixed(1)
+        : '0'
 
       return {
         platform: latest.platform,
@@ -579,6 +592,7 @@ export const socialMediaAPI = {
         followerGrowth: `+${followerGrowthPct}%`,
         likeGrowth: `+${likeGrowthPct}%`,
         viewGrowth: `+${viewGrowthPct}%`,
+        postGrowth: `+${postGrowthPct}%`,
       }
     }
 
@@ -606,19 +620,44 @@ export const socialMediaAPI = {
         tiktokLikes: tt?.likes ?? 0,
         instagramViews: ig?.views ?? 0,
         tiktokViews: tt?.views ?? 0,
+        instagramPosts: ig?.posts ?? 0,
+        tiktokPosts: tt?.posts ?? 0,
         percentageIgFollowers: calcPct(ig?.followers, prevIg?.followers),
         percentageTtFollowers: calcPct(tt?.followers, prevTt?.followers),
         percentageIgLikes: calcPct(ig?.likes, prevIg?.likes),
         percentageTtLikes: calcPct(tt?.likes, prevTt?.likes),
         percentageIgViews: calcPct(ig?.views, prevIg?.views),
         percentageTtViews: calcPct(tt?.views, prevTt?.views),
+        percentageIgPosts: calcPct(ig?.posts, prevIg?.posts),
+        percentageTtPosts: calcPct(tt?.posts, prevTt?.posts),
       }
     })
+
+    // Calculate biggest week-over-week follower increase for each platform
+    const calcBiggestFollowerIncrease = (platformRows: SocialMediaWeekRow[]) => {
+      let best = { week: '', increase: 0, percentage: 0 }
+      for (let i = 1; i < platformRows.length; i++) {
+        const increase = platformRows[i].followers - platformRows[i - 1].followers
+        const pct = platformRows[i - 1].followers > 0
+          ? Number(((increase / platformRows[i - 1].followers) * 100).toFixed(1))
+          : 0
+        if (increase > best.increase) {
+          best = { week: platformRows[i].week_label, increase, percentage: pct }
+        }
+      }
+      return best
+    }
+
+    const biggestFollowerIncrease: BiggestFollowerIncrease = {
+      instagram: calcBiggestFollowerIncrease(igRows),
+      tiktok: calcBiggestFollowerIncrease(ttRows),
+    }
 
     return {
       instagram: igSummary,
       tiktok: ttSummary,
       chartData,
+      biggestFollowerIncrease,
     }
   },
 }

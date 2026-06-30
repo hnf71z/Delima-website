@@ -17,6 +17,9 @@ import {
   DollarSign,
   Loader2,
   ArrowUpRight,
+  Instagram,
+  Video,
+  Globe,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -29,9 +32,11 @@ import {
   PieChart,
   Pie,
   Cell,
+  LabelList,
 } from 'recharts'
 import { motion } from 'framer-motion'
-import { analyticsAPI } from '@/lib/api'
+import { analyticsAPI, socialMediaAPI, type BiggestFollowerIncrease, type SocialMediaChartRow, type PlatformSummary } from '@/lib/api'
+import { Separator } from '@/components/ui/separator'
 
 interface Metrics {
   totalRevenue: number
@@ -92,6 +97,11 @@ export default function DashboardPage() {
   const [weeklyRevenueData, setWeeklyRevenueData] = useState<WeeklyRevenueData[]>([])
   const [productDistribution, setProductDistribution] = useState<Record<string, unknown>[]>([])
   const [revenueByProduct, setRevenueByProduct] = useState<Record<string, unknown>[]>([])
+  const [biggestFollowerIncrease, setBiggestFollowerIncrease] = useState<BiggestFollowerIncrease | null>(null)
+  const [socialChartData, setSocialChartData] = useState<SocialMediaChartRow[]>([])
+  const [igStats, setIgStats] = useState<PlatformSummary | null>(null)
+  const [ttStats, setTtStats] = useState<PlatformSummary | null>(null)
+  const [webStats, setWebStats] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -113,6 +123,25 @@ export default function DashboardPage() {
         setWeeklyRevenueData(weeklyRevenueTrend)
         setProductDistribution(distributionData)
         setRevenueByProduct(revenueData)
+
+        // Fetch social media data for executive summary
+        try {
+          const socialStats = await socialMediaAPI.getStats()
+          setBiggestFollowerIncrease(socialStats.biggestFollowerIncrease)
+          setSocialChartData(socialStats.chartData)
+          setIgStats(socialStats.instagram)
+          setTtStats(socialStats.tiktok)
+        } catch (socialErr) {
+          console.warn('Social media stats not available:', socialErr)
+        }
+
+        // Fetch website analytics for the visualization summary
+        try {
+          const webData = await analyticsAPI.getVercelVisitorsTrend()
+          setWebStats(webData)
+        } catch (webErr) {
+          console.warn('Web analytics not available:', webErr)
+        }
       } catch (error) {
         console.error('Failed to load dashboard data:', error)
       } finally {
@@ -192,6 +221,41 @@ export default function DashboardPage() {
     ? [...weeklyRevenueData].sort((a, b) => b.revenue - a.revenue)[0]
     : null
 
+  const bestFollowerWeek = socialChartData.length > 0
+    ? [...socialChartData].sort((a, b) => (b.instagramFollowers + b.tiktokFollowers) - (a.instagramFollowers + a.tiktokFollowers))[0]
+    : null
+
+  // Parse a "+12.5%" growth string into a number
+  const parseGrowth = (g?: string) => (g ? Number(g.replace(/[+%]/g, '')) || 0 : 0)
+
+  // Website totals + first→last week growth
+  const webVisitors = webStats.reduce((sum, w) => sum + (w.visitors ?? 0), 0)
+  const webPageViews = webStats.reduce((sum, w) => sum + (w.pageViews ?? 0), 0)
+  const webGrowth = (cur: number, prev: number) =>
+    prev > 0 ? Number((((cur - prev) / prev) * 100).toFixed(1)) : cur > 0 ? 100 : 0
+  const webVisitorGrowth = webStats.length > 1 ? webGrowth(webStats[webStats.length - 1].visitors ?? 0, webStats[0].visitors ?? 0) : 0
+  const webPageViewGrowth = webStats.length > 1 ? webGrowth(webStats[webStats.length - 1].pageViews ?? 0, webStats[0].pageViews ?? 0) : 0
+
+  // Bar-chart data per platform — value + percentage increase (dari minggu terbaik)
+  const igMetricsData = bestFollowerWeek ? [
+    { metric: 'Follower', value: bestFollowerWeek.instagramFollowers, pct: bestFollowerWeek.percentageIgFollowers, fill: '#84cc16' },
+    { metric: 'Like', value: bestFollowerWeek.instagramLikes, pct: bestFollowerWeek.percentageIgLikes, fill: '#ec4899' },
+    { metric: 'Tampilan', value: bestFollowerWeek.instagramViews, pct: bestFollowerWeek.percentageIgViews, fill: '#06b6d4' },
+    { metric: 'Post', value: bestFollowerWeek.instagramPosts, pct: bestFollowerWeek.percentageIgPosts, fill: '#f59e0b' },
+  ] : []
+
+  const ttMetricsData = bestFollowerWeek ? [
+    { metric: 'Follower', value: bestFollowerWeek.tiktokFollowers, pct: bestFollowerWeek.percentageTtFollowers, fill: '#16a34a' },
+    { metric: 'Like', value: bestFollowerWeek.tiktokLikes, pct: bestFollowerWeek.percentageTtLikes, fill: '#ec4899' },
+    { metric: 'Tampilan', value: bestFollowerWeek.tiktokViews, pct: bestFollowerWeek.percentageTtViews, fill: '#06b6d4' },
+    { metric: 'Post', value: bestFollowerWeek.tiktokPosts, pct: bestFollowerWeek.percentageTtPosts, fill: '#f59e0b' },
+  ] : []
+
+  const webMetricsData = webStats.length > 0 ? [
+    { metric: 'Pengunjung', value: webVisitors, pct: webVisitorGrowth, fill: '#3b82f6' },
+    { metric: 'Page View', value: webPageViews, pct: webPageViewGrowth, fill: '#06b6d4' },
+  ] : []
+
   const metricsCards = [
     {
       title: 'Total Omzet',
@@ -259,6 +323,64 @@ export default function DashboardPage() {
   const bestSeller = productDistribution.length > 0 
     ? productDistribution.reduce((max, p) => (p.value as number) > (max.value as number) ? p : max, productDistribution[0]) as { name: string, value: number }
     : { name: '-', value: 0 }
+
+  // Per-platform metric bar chart: each bar = a metric, with value + % increase in tooltip
+  const PlatformMetricChart = ({
+    title,
+    subtitle,
+    data,
+    gradientId,
+  }: {
+    title: string
+    subtitle: string
+    data: { metric: string; value: number; pct: number; fill: string }[]
+    gradientId: string
+  }) => (
+    <div className="rounded-xl border border-gray-100 bg-white p-4">
+      <div className="flex items-center gap-2 mb-0.5">
+        <p className="text-xs font-semibold text-gray-700">{title}</p>
+      </div>
+      <p className="text-[10px] text-muted-foreground mb-3">{subtitle}</p>
+      <ChartContainer
+        config={{ value: { label: 'Jumlah', color: chartColors.lime } }}
+        className="h-[180px] w-full"
+      >
+        <BarChart data={data} barCategoryGap="25%" margin={{ top: 25, right: 0, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200/50" vertical={false} />
+          <XAxis dataKey="metric" className="text-[10px]" tickLine={false} axisLine={false} />
+          <YAxis className="text-[10px]" tickLine={false} axisLine={false} tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v))} />
+          <ChartTooltip content={<ChartTooltipContent formatter={(value, name, item, index, payload) =>
+            renderTooltipRow(value, payload.metric, item, payload.pct, false)
+          } />} />
+          <Bar dataKey="value" radius={[5, 5, 0, 0]} maxBarSize={48}>
+            <LabelList
+              dataKey="value"
+              content={(props: any) => {
+                const { x, y, width, value, index } = props
+                const entry = data[index]
+                if (!entry) return null
+                return (
+                  <g transform={`translate(${x + width / 2},${y - 14})`}>
+                    <text x={0} y={0} fill="#374151" fontSize={10} textAnchor="middle" fontWeight="bold">
+                      {value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toLocaleString('id-ID')}
+                    </text>
+                    {entry.pct !== undefined && entry.pct !== 0 && (
+                      <text x={0} y={11} fill={entry.pct > 0 ? "#10b981" : "#ef4444"} fontSize={9} textAnchor="middle" fontWeight="600">
+                        {entry.pct > 0 ? '+' : ''}{entry.pct}%
+                      </text>
+                    )}
+                  </g>
+                )
+              }}
+            />
+            {data.map((entry, index) => (
+              <Cell key={`${gradientId}-cell-${index}`} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
+    </div>
+  )
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -611,7 +733,171 @@ export default function DashboardPage() {
                     <span>Performa paling maksimal terjadi pada <strong className="text-gray-900">{bestWeek.week}</strong> dengan pencapaian omzet tertinggi sebesar <strong className="text-gray-900">{formatCurrency(bestWeek.revenue)}</strong>.</span>
                   </li>
                 )}
+                {biggestFollowerIncrease && (biggestFollowerIncrease.instagram.increase > 0 || biggestFollowerIncrease.tiktok.increase > 0) && (
+                  <>
+                    {biggestFollowerIncrease.instagram.increase > 0 && (
+                      <li className="flex items-start gap-2">
+                        <span className="text-lime-600 font-bold mt-0.5">•</span>
+                        <span>Kenaikan follower <strong className="text-gray-900">Instagram</strong> terbesar terjadi pada <strong className="text-gray-900">{biggestFollowerIncrease.instagram.week}</strong> dengan peningkatan <strong className="text-gray-900">+{biggestFollowerIncrease.instagram.increase} followers</strong> (<span className="text-emerald-600 font-semibold">+{biggestFollowerIncrease.instagram.percentage}%</span>).</span>
+                      </li>
+                    )}
+                    {biggestFollowerIncrease.tiktok.increase > 0 && (
+                      <li className="flex items-start gap-2">
+                        <span className="text-lime-600 font-bold mt-0.5">•</span>
+                        <span>Kenaikan follower <strong className="text-gray-900">TikTok</strong> terbesar terjadi pada <strong className="text-gray-900">{biggestFollowerIncrease.tiktok.week}</strong> dengan peningkatan <strong className="text-gray-900">+{biggestFollowerIncrease.tiktok.increase} followers</strong> (<span className="text-emerald-600 font-semibold">+{biggestFollowerIncrease.tiktok.percentage}%</span>).</span>
+                      </li>
+                    )}
+                  </>
+                )}
               </ul>
+            </div>
+
+            {/* Executive Summary Charts */}
+            <Separator className="my-5" />
+            <p className="text-sm font-semibold text-gray-800 mb-1">Visualisasi Data Ringkasan</p>
+            <p className="text-xs text-muted-foreground mb-4">Grafik pendukung untuk seluruh data pada ringkasan eksekutif</p>
+
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+              {/* 1. Omzet vs Laba Bersih — Minggu Tertinggi */}
+              {bestWeek && (
+                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                  <p className="text-xs font-semibold text-gray-700 mb-0.5">Omzet vs Laba Bersih</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">Performa tertinggi: <strong>{bestWeek.week}</strong></p>
+                  <ChartContainer
+                    config={{
+                      revenue: { label: 'Omzet', color: chartColors.lime },
+                      netProfit: { label: 'Laba Bersih', color: chartColors.cyan },
+                    }}
+                    className="h-[180px] w-full"
+                  >
+                    <BarChart data={[bestWeek]} barGap={8} barCategoryGap="30%">
+                      <defs>
+                        <linearGradient id="gradRevExec" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={chartColors.lime} stopOpacity={1} />
+                          <stop offset="100%" stopColor={chartColors.lime} stopOpacity={0.6} />
+                        </linearGradient>
+                        <linearGradient id="gradProfitExec" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={chartColors.cyan} stopOpacity={1} />
+                          <stop offset="100%" stopColor={chartColors.cyan} stopOpacity={0.6} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200/50" vertical={false} />
+                      <XAxis dataKey="week" className="text-[10px]" tickLine={false} axisLine={false} />
+                      <YAxis className="text-[10px]" tickLine={false} axisLine={false} tickFormatter={(v: number) => formatCompactCurrency(v)} />
+                      <ChartTooltip content={<ChartTooltipContent formatter={(value, name, item) => renderTooltipRow(value, name, item)} />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Bar dataKey="revenue" fill="url(#gradRevExec)" radius={[5, 5, 0, 0]} maxBarSize={60} />
+                      <Bar dataKey="netProfit" fill="url(#gradProfitExec)" radius={[5, 5, 0, 0]} maxBarSize={60} />
+                    </BarChart>
+                  </ChartContainer>
+                </div>
+              )}
+
+              {/* 2. Omzet Minggu Tertinggi — Detail */}
+              {bestWeek && (
+                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                  <p className="text-xs font-semibold text-gray-700 mb-0.5">Detail {bestWeek.week}</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">Omzet tertinggi: <strong>{formatCurrency(bestWeek.revenue)}</strong></p>
+                  <ChartContainer
+                    config={{
+                      revenue: { label: 'Omzet', color: chartColors.lime },
+                      hpp: { label: 'HPP', color: chartColors.cyan },
+                      netProfit: { label: 'Laba Bersih', color: '#16a34a' },
+                    }}
+                    className="h-[180px] w-full"
+                  >
+                    <BarChart data={[bestWeek]} barGap={6} barCategoryGap="25%">
+                      <defs>
+                        <linearGradient id="gradHppExec" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={chartColors.cyan} stopOpacity={1} />
+                          <stop offset="100%" stopColor={chartColors.cyan} stopOpacity={0.6} />
+                        </linearGradient>
+                        <linearGradient id="gradNetProfitExec" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#16a34a" stopOpacity={1} />
+                          <stop offset="100%" stopColor="#16a34a" stopOpacity={0.6} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200/50" vertical={false} />
+                      <XAxis dataKey="week" className="text-[10px]" tickLine={false} axisLine={false} />
+                      <YAxis className="text-[10px]" tickLine={false} axisLine={false} tickFormatter={(v: number) => formatCompactCurrency(v)} />
+                      <ChartTooltip content={<ChartTooltipContent formatter={(value, name, item) => renderTooltipRow(value, name, item)} />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Bar dataKey="revenue" fill="url(#gradRevExec)" radius={[5, 5, 0, 0]} maxBarSize={50} />
+                      <Bar dataKey="hpp" fill="url(#gradHppExec)" radius={[5, 5, 0, 0]} maxBarSize={50} />
+                      <Bar dataKey="netProfit" fill="url(#gradNetProfitExec)" radius={[5, 5, 0, 0]} maxBarSize={50} />
+                    </BarChart>
+                  </ChartContainer>
+                </div>
+              )}
+
+              {/* 3. Produk Terlaris — dari minggu tertinggi */}
+              {bestWeek && bestWeek.products && bestWeek.products.length > 0 && (
+                <div className="rounded-xl border border-gray-100 bg-white p-4">
+                  <p className="text-xs font-semibold text-gray-700 mb-0.5">Produk Terjual — {bestWeek.week}</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">Distribusi produk di minggu terbaik</p>
+                  <ChartContainer
+                    config={bestWeek.products.reduce((acc: Record<string, { label: string; color: string }>, item: WeeklyProductData, index: number) => {
+                      const colors = ['#84cc16', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6', '#ef4444', '#10b981']
+                      acc[item.name] = { label: item.name, color: colors[index % colors.length] }
+                      return acc
+                    }, {})}
+                    className="h-[180px] w-full"
+                  >
+                    <PieChart>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend className="flex-wrap gap-1.5 text-[10px]" content={<ChartLegendContent />} />
+                      <Pie
+                        data={bestWeek.products.map((p: WeeklyProductData) => ({ name: p.name, value: p.quantity }))}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="45%"
+                        outerRadius={65}
+                        innerRadius={40}
+                        strokeWidth={2}
+                        stroke="transparent"
+                        label={false}
+                        labelLine={false}
+                      >
+                        {bestWeek.products.map((_: WeeklyProductData, index: number) => {
+                          const colors = ['#84cc16', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6', '#ef4444', '#10b981']
+                          return <Cell key={`exec-cell-${index}`} fill={colors[index % colors.length]} />
+                        })}
+                      </Pie>
+                    </PieChart>
+                  </ChartContainer>
+                </div>
+              )}
+
+              {/* 4. Instagram — follower, like, tampilan, post */}
+              {igMetricsData.length > 0 && (
+                <PlatformMetricChart
+                  title="Instagram"
+                  subtitle={`${igStats?.handle || '@delimafnb.id'} — ${bestFollowerWeek?.name}`}
+                  data={igMetricsData}
+                  gradientId="ig"
+                />
+              )}
+
+              {/* 5. TikTok — follower, like, tampilan, post */}
+              {ttMetricsData.length > 0 && (
+                <PlatformMetricChart
+                  title="TikTok"
+                  subtitle={`${ttStats?.handle || '@delimafnb.id'} — ${bestFollowerWeek?.name}`}
+                  data={ttMetricsData}
+                  gradientId="tt"
+                />
+              )}
+
+              {/* 6. Website — pengunjung & page view */}
+              {webMetricsData.length > 0 && (
+                <PlatformMetricChart
+                  title="Website"
+                  subtitle="Vercel Analytics"
+                  data={webMetricsData}
+                  gradientId="web"
+                />
+              )}
             </div>
           </CardContent>
         </Card>
