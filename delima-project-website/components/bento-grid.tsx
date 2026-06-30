@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, useInView } from "framer-motion"
+import { motion, useInView, useReducedMotion } from "framer-motion"
 import { useRef } from "react"
 import { Highlighter } from "@/components/ui/highlighter"
 
@@ -93,19 +93,40 @@ function PilarItem({ pillar, isLast }: { pillar: typeof pillars[0]; isLast: bool
   )
 }
 
-/* ━━ Mobile pillar card — static (no animation) to avoid jank on mobile ━━ */
-function MobilePilarItem({ pillar }: { pillar: typeof pillars[0] }) {
+/* ━━ Mobile pillar card — compact acronym timeline, lightweight fade-in (no jank) ━━ */
+function MobilePilarItem({ pillar, isLast, index }: { pillar: typeof pillars[0]; isLast: boolean; index: number }) {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-lime-100 bg-gradient-to-br from-white to-lime-50/40 p-6 shadow-lg shadow-lime-200/30">
-      <div className="relative z-10">
-        <h3 className="text-xl font-bold tracking-tight mb-3">
-          <span className="green-shimmer relative z-10 leading-none block" data-text={pillar.title}>{pillar.title}</span>
-        </h3>
-        <p className="text-sm leading-relaxed text-gray-600">
-          {pillar.description}
-        </p>
+    <motion.div
+      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.35 }}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+      className="relative rounded-2xl border border-lime-100 bg-gradient-to-br from-white to-lime-50/40 p-5 shadow-sm shadow-lime-200/30"
+    >
+      <div className="flex gap-4">
+        {/* Letter + connecting spine */}
+        <div className="flex flex-col items-center flex-shrink-0">
+          <span className="text-5xl font-black leading-none text-[#365314]">
+            {pillar.letter}
+          </span>
+          {!isLast && (
+            <div className="w-[2px] flex-1 mt-2 origin-top rounded-full bg-gradient-to-b from-[#84cc16] via-[#65a30d]/40 to-transparent" />
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="min-w-0 pt-0.5 pb-1">
+          <h3 className="text-xl font-bold tracking-tight mb-2">
+            <span className="green-shimmer relative z-10 leading-none block" data-text={pillar.title}>{pillar.title}</span>
+          </h3>
+          <p className="text-sm leading-relaxed text-gray-600">
+            {pillar.description}
+          </p>
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -166,7 +187,7 @@ export function BentoGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
-            className="sticky top-20 z-20 -mx-6 mb-6 flex flex-col gap-3 items-start bg-white/85 px-6 pb-5 pt-0 backdrop-blur-md"
+            className="pt-6 mb-8 flex flex-col gap-3 items-start"
           >
             <span className="font-mono text-[#65a30d] text-[0.65rem] tracking-[0.3em] uppercase">
               Filosofi Kami
@@ -179,9 +200,9 @@ export function BentoGrid() {
             </p>
           </motion.div>
 
-          <div className="flex flex-col gap-5">
-            {pillars.map((pillar) => (
-              <MobilePilarItem key={pillar.letter} pillar={pillar} />
+          <div className="flex flex-col gap-3">
+            {pillars.map((pillar, index) => (
+              <MobilePilarItem key={pillar.letter} pillar={pillar} isLast={index === pillars.length - 1} index={index} />
             ))}
           </div>
         </div>
