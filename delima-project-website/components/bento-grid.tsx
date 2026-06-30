@@ -193,7 +193,7 @@ export function BentoGrid() {
               Filosofi Kami
             </span>
             <Highlighter action="underline" color="#65a30d" strokeWidth={3} animationDuration={1500} padding={4}>
-              <span className="green-shimmer text-[3rem] font-bold tracking-tight leading-none mt-1 block px-1" data-text="De'Lima">De&apos;Lima</span>
+              <span className="green-shimmer text-[3rem] font-bold tracking-tight leading-none mt-1 inline-block" data-text="De'Lima">De&apos;Lima</span>
             </Highlighter>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500">
               Lima nilai yang menjadi rasa, layanan, dan janji di setiap sajian kami.
